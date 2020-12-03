@@ -1,13 +1,17 @@
-
 from __future__ import with_statement
 
-from nose.tools import eq_
-import struct
 import os
+import struct
 from io import BytesIO
+from pathlib import Path
+
+from nose.tools import eq_
 
 from idzip import compressor
 from . import asserting
+
+ROOT = Path(__file__).parent.parent.absolute()
+
 
 def test_reserved():
     eq_(compressor.FRESERVED, int("11100000", 2))
@@ -41,9 +45,9 @@ def test_compress_multiple_members():
 
     expected = open("test/data/two_members.txt.dz", "rb")
     _eq_zformat(expected, produced, mtime, expected_basename="two_members.txt",
-            in_size=first_size)
+                in_size=first_size)
     _eq_zformat(expected, produced, mtime=0, expected_basename=None,
-            in_size=second_size)
+                in_size=second_size)
 
 
 def test_big_file():
@@ -62,13 +66,13 @@ def test_big_file():
 
 def _eq_compress(basename, mtime=0):
     output = _mem_compress(basename, mtime)
-    expected = open("test/data/%s.dz" % basename, "rb")
+    expected = open(ROOT / ("test/data/%s.dz" % basename), "rb")
     _eq_zformat(expected, output, mtime, expected_basename=basename)
 
 
 def _mem_compress(basename, mtime=0):
     output = BytesIO()
-    with open("test/data/%s" % basename, "rb") as input:
+    with open(ROOT / ("test/data/%s" % basename), "rb") as input:
         in_size = _inputsize(input)
         compressor.compress(input, in_size, output, basename, mtime)
 

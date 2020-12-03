@@ -53,6 +53,27 @@ def test_idzip_file_api():
     os.remove(dzfile)
     os.remove(gzfile)
 
+def test_idzip_append_api():
+    data = random_string(5e6)
+
+    dfd, dzfile = tempfile.mkstemp(suffix='.dz')
+    with IdzipFile(dzfile, 'wb') as writer:
+        writer.write(data)
+
+    assert writer.closed
+    f = open(dzfile, 'ab')
+    idz = IdzipFile(fileobj=f, mode="wb")
+    idz.write(b"\nappend data")
+    idz.close()
+    f.close()
+
+    with IdzipFile(dzfile, 'rb') as reader:
+        decoded = reader.read()
+
+    assert reader.closed
+    assert decoded[-4:] == b'data'
+
+    os.remove(dzfile)
 
 def test_large_write():
     if environ.get("BUILDENV") == "TRAVIS":
